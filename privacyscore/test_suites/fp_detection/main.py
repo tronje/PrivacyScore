@@ -68,6 +68,7 @@ def _rate_fingerprinting(results, rater):
 
     if fp_data['audio']:
         apis_used += 1
+        score += 1  # extra score because Audio is extra suspicious
         details_list.append(("Audio API",))
     if fp_data['webgl']:
         apis_used += 1
@@ -79,6 +80,7 @@ def _rate_fingerprinting(results, rater):
     if fp_data['canvas']['toDataURL calls'] > 0 \
        or fp_data['canvas']['getImageData calls'] > 0:
         apis_used += 1
+        score += 1  # extra score because Canvas is extra suspicious
 
     if fp_data['font']['fonts set']['count'] > 0 \
        or fp_data['font']['measureText calls']['count'] > 0:
@@ -125,7 +127,7 @@ def _rate_fingerprinting(results, rater):
         )
 
         # dead giveaway
-        score += 100
+        score += 5
 
     if fjordbank:
         description.append(
@@ -133,7 +135,7 @@ def _rate_fingerprinting(results, rater):
         )
 
         # dead giveaway
-        score += 100
+        score += 5
 
     # canvas
     tdu_calls = fp_data['canvas']['toDataURL calls']
@@ -141,11 +143,9 @@ def _rate_fingerprinting(results, rater):
 
     if tdu_calls > 0:
         description.append(f"'toDataURL' called {tdu_calls} times.")
-        # score += 1
 
     if gid_calls > 0:
         description.append(f"'getImageData' called {gid_calls} times.")
-        # score += 1
 
     if tdu_calls + gid_calls > 0:
         details_list.append(("canvas API",))
@@ -172,7 +172,7 @@ def _rate_fingerprinting(results, rater):
             details_list.append((script,))
 
         # dead giveaway
-        score += 100
+        score += 5
 
     # basic attributes
     count = 0
@@ -196,9 +196,6 @@ def _rate_fingerprinting(results, rater):
     if count > 0:
         description.append(f"{count} fingerprintable attributes used.")
         score += 1
-
-    # if count >= 7:
-    #     score += 1
 
     rating = None
 
