@@ -24,6 +24,8 @@ import tldextract
 from django.conf import settings
 from PIL import Image
 
+from . import fp_detection
+
 
 test_name = 'openwpm'
 test_dependencies = [
@@ -399,6 +401,20 @@ def process_test_data(raw_data: list, previous_results: dict, scan_basedir: str,
         # Do not set mixed content key in results if function returned None
         if mixed_content is not None:
             scantosave["mixed_content"] = mixed_content
+
+    # fingerprinting
+    scantosave['fingerprinting'] = {
+        'success': False,
+    }
+
+    try:
+        scantosave['fingerprinting']['data'] = \
+                fp_detection.aggregate_results(url, conn)
+
+        scantosave['fingerprinting']['success'] = True
+    except Exception as e:
+        print("Exception trying to aggregate fingerprinting detection results!")
+        print(type(e), e)
 
     # Close SQLite connection
     conn.close()

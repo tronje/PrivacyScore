@@ -6,6 +6,8 @@ from django.utils.translation import ungettext_lazy
 from privacyscore.evaluation.description import describe_locations
 from privacyscore.evaluation.rating import Rating
 
+from privacyscore.test_suites.fp_detection import rate_fingerprinting
+
 # Checks are ordered in groups.
 # Each check defines a set of keys it takes, the rating function
 # and how to rate it (or not to rate it with None) when at least one key is
@@ -186,6 +188,17 @@ CHECKS['privacy']['server_locations'] = {
         'details_list': None
     },
     'missing': None,
+}
+
+# Check for fingerprinting
+CHECKS['privacy']['fingerprinting'] = {
+    'keys': {'fingerprinting'},
+    'rating': lambda **keys: rate_fingerprinting(keys, Rating),
+    'missing': {
+        'description': 'Gathering or rating of fingerprinting scan failed!',
+        'classification': Rating('neutral'),
+        'details_list': None,
+    },
 }
 
 #####################
@@ -1612,6 +1625,31 @@ CHECKS['privacy']['server_locations']['longdesc'] = '''<p>Some site owners outso
 </ul>
 ''' 
 CHECKS['privacy']['server_locations']['labels'] = ['unreliable']
+
+CHECKS['privacy']['fingerprinting']['title'] = 'Check for signs of browser- or device-fingerprinting'
+CHECKS['privacy']['fingerprinting']['longdesc'] = '''<p>Websites that wish to track their users more reliably than with a cookie can construct a fingerprint out of data the browser gives out freely.</p>
+<p>
+The potentially fingerprintable APIs we check for are:
+<ul>
+<li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API">Audio</a></li>
+<li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API">Canvas</a></li>
+<li><a href="https://developer.mozilla.org/en-US/docs/Web/API/TextMetrics">Font</a></li>
+<li><a href="https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API">WebGL</a></li>
+<li><a href="https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API<Paste>">WebRTC</a></li>
+</ul>
+
+We further check for accesses to 'basic' attributes like the userAgent, which
+are often used in fingerprinting.
+Finally, we check for use of suspcious function names or known fingerprinter scripts.
+See the JSON results for a list of script-URLs for each use of a fignerprintable API we have found.
+</p>
+<p>Further reading:</p>
+<ul>
+<li><a href="https://en.wikipedia.org/wiki/Browser_fingerprinting">Wikipedia</a></li>
+<li><a href="https://panopticlick.eff.org/">EFF's Panopticlick project</a></li>
+<li><a href="https://amiunique.org/">Am I Unique?</a></li>
+</ul>
+'''
 
 CHECKS['security']['leaks']['title'] = "Check for unintentional information leaks"
 CHECKS['security']['leaks']['longdesc'] = '''<p>Web servers may be configured incorrectly and expose private information on the public internet. This test looks for a series of common mistakes: Exposing the "server-status" or "server-info" pages of the web server, common debugging files that may have been forgotten on the server, and the presence of version control system files from the Git or SVN systems, which may contain private or security-critical information.</p>
